@@ -26,14 +26,15 @@ hyprctl plugin load /dir/to/build/libhyprfoci.so
 ```
 change load to unload to remove the plugin
 
-### Config
 TODO
-- [] size
-- [] color
-- [] position
-- [] shape
-- [] option to disable indicator when there is only 1 window
-- [] maybe something else
+- [x] main functionalities
+- [ ] config
+    - [ ] size
+    - [ ] color
+    - [ ] position
+    - [ ] shape
+    - [ ] option to disable indicator when there is only 1 window
+- [ ] maybe something else
 
 ## Contribute
 PRs are welcome~
