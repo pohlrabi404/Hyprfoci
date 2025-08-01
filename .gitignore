@@ -1,4 +1,5 @@
 .ssh/*
 .cache/*
 build/*
+libhyprfoci.so
 hyprland.conf
