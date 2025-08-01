@@ -11,18 +11,17 @@ So the overall use cases:
 ## Installation
 ### Requirement
 - Hyprland v0.40.0 or newer (needs the plugin ABI).
-- Meson >= 0.60 and a C++ compiler. 
+- Meson, cmake and a C++ compiler. 
 
 ### Build from source
 ```bash
 git clone https://github.com/pohlrabi404/Hyprfoci
 cd Hyprfoci
-meson setup build
-meson compile -C build
+make all
 ```
 then add it to hyprland:
 ```bash
-hyprctl plugin load /dir/to/build/libhyprfoci.so
+hyprctl plugin load /dir/to/hyprfoci.so
 ```
 change load to unload to remove the plugin
 
