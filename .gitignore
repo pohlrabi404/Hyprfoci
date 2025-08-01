@@ -1,0 +1,4 @@
+.ssh/*
+.cache/*
+build/*
+hyprland.conf
