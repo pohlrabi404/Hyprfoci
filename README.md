@@ -6,7 +6,7 @@ I'm not a fan of border/dim/opacity in general, so having an a dot as indicator 
 So the overall use cases: 
 - You run a borderless or minimal border setup.
 - You are blind like me and lose track of which window is currently focused.
-- Subtle, non-intrusive visual cue without all the giant borders, widow titles, just a dot.
+- Subtle, non-intrusive visual cue without all the giant borders, window titles, just a dot.
 
 ## Installation
 ### Requirement
