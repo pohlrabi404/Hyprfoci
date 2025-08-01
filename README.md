@@ -32,6 +32,7 @@ TODO
 - [] color
 - [] position
 - [] shape
+- [] option to disable indicator when there is only 1 window
 - [] maybe something else
 
 ## Contribute
