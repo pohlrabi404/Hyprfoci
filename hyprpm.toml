@@ -1,10 +1,12 @@
 [repository]
 name = "Hyprfoci"
 authors = ["Pohlrabi"]
-output = "libhyprfoci.so"
 commit_pins = [
-	["3e35797b18d35baae82657bb0438af88156e273f", "e23ddd748eab3d06a05e801e9f4ace6ca15f6e90"],
+	["3e35797b18d35baae82657bb0438af88156e273f", "9c9f65c4fbfaa793e4e1b24c61d9d4e09961bbe0"],
 ]
-build = [
-	"make all"
-]
+
+[hyprfoci]
+description = "A plugin that shows focus dot"
+authors = ["Pohlrabi"]
+output = "hyprfoci.so"
+build = ["make all"]
