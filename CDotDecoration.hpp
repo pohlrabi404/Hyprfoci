@@ -26,5 +26,5 @@ public:
   PHLWINDOWREF m_pWindow;
 
 private:
-  CHyprColor m_cSquareColor = CHyprColor(1.0f, 0.867f, 0.2f, 0.8f);
+  CHyprColor m_cSquareColor = CHyprColor(0.451f, 0.851f, 0.212f, 0.8f);
 };
