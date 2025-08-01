@@ -3,7 +3,7 @@ name = "Hyprfoci"
 authors = ["Pohlrabi"]
 output = "libhyprfoci.so"
 commit_pins = [
-	["3e35797b18d35baae82657bb0438af88156e273f", "7499bcb08d7881a89bb752abc4eeb173ba8da618"],
+	["3e35797b18d35baae82657bb0438af88156e273f", "e23ddd748eab3d06a05e801e9f4ace6ca15f6e90"],
 ]
 build = [
 	"make all"
