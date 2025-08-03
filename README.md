@@ -9,7 +9,7 @@ So the overall use cases:
 - Subtle, non-intrusive visual cue without all the giant borders, window titles, just a dot.
 
 ## Demo
-[📽️ Demo video (v0.1)](https://github.com/pohlrabi404/Hyprfoci/releases/download/v0.1/demo.mp4)
+[📽️ Demo video (v0.1)](https://github.com/user-attachments/assets/dc8d3c55-17ad-4cdb-b2d8-a7f83b900121)
 
 ## Installation
 ### Requirement
