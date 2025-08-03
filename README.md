@@ -10,7 +10,8 @@ So the overall use cases:
 - UPDATE: Now also support png images
 
 ## Demo
-[📽️ Demo video (v0.2.0)](https://github.com/user-attachments/assets/dc8d3c55-17ad-4cdb-b2d8-a7f83b900121)
+[📽️ Demo video (v0.2.0)](https://github.com/user-attachments/assets/677dee35-c2f8-4fef-8014-55c800b47688)
+
 
 ## Installation
 ### Requirement
