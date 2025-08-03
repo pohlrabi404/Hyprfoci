@@ -41,11 +41,10 @@ plugin {
 
 TODO
 - [x] main functionalities
-- [ ] config
-    - [x] size
-    - [x] color
-    - [x] position
-    - [ ] shape
+- [x] add config options
+    - [x] size, color, position
+    - [ ] more position origins (top left, top middle, etc)
+    - [ ] shape (maybe just svg instead)
     - [ ] option to disable indicator when there is only 1 window
     - [ ] change dot to svg
 - [ ] maybe something else
