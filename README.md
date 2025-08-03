@@ -7,9 +7,10 @@ So the overall use cases:
 - You run a borderless or minimal border setup.
 - You are blind like me and lose track of which window is currently focused.
 - Subtle, non-intrusive visual cue without all the giant borders, window titles, just a dot.
+- UPDATE: Now also support png images
 
 ## Demo
-[📽️ Demo video (v0.1)](https://github.com/user-attachments/assets/dc8d3c55-17ad-4cdb-b2d8-a7f83b900121)
+[📽️ Demo video (v0.2.0)](https://github.com/user-attachments/assets/dc8d3c55-17ad-4cdb-b2d8-a7f83b900121)
 
 ## Installation
 ### Requirement
