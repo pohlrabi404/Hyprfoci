@@ -8,6 +8,9 @@ So the overall use cases:
 - You are blind like me and lose track of which window is currently focused.
 - Subtle, non-intrusive visual cue without all the giant borders, window titles, just a dot.
 
+## Demo
+[📽️ Demo video (v0.1)](https://github.com/pohlrabi404/Hyprfoci/releases/download/v0.1/demo.mp4)
+
 ## Installation
 ### Requirement
 - Hyprland v0.40.0 or newer (needs the plugin ABI).
