@@ -32,14 +32,32 @@ change load to unload to remove the plugin
 Add the following to your Hyprland.conf
 ```hyprland.conf
 plugin {
-    hyprfoci {
-		size = 10, 10 # width, height 
-		pos = 10, 10 # distance from the top left corner
-		rounding = 2.0 # usually 2.0 will make it a circle
-                       # high number can make it square-er
-		color = rgba(aaff0088)
-		origin = 2, 1 #0: left/top, 1: middle, 2: down/right
-    }
+	hyprfoci {
+		# can be from -1 to 1, will be
+			# dynamic ratio with the window instead.
+			# recommend fixed size for image as dynamic can look weird
+			# in some cases.
+			# leave one as 0 to keep original image ratio (image only)
+		# width, height
+		size = 100, 0 			
+
+		# shift down right (can be from -1 to 1 similarly)
+		pos = 0, 0
+
+		# rounding of 3~4 usually results in circle
+			# depends on monitor type
+			# higher and lower will make it look square-ly
+			# doesn't affect image
+		rounding = 4.0
+
+		# color = rgba(FFDD33FF)
+
+		#0: left/top, 1: middle, 2: down/right
+		origin = 1, 0 
+
+		# Absolute path is needed
+		img = /path/to/your/image.png
+	}
 }
 ```
 
@@ -48,9 +66,9 @@ TODO
 - [x] add config options
     - [x] size, color, position
     - [x] more position origins (top left, top middle, etc)
-    - [ ] shape (maybe just svg instead)
+    - [x] support for png
+    - [ ] animation
     - [ ] option to disable indicator when there is only 1 window
-    - [ ] change dot to svg
 - [ ] maybe something else
 
 ## Contribute

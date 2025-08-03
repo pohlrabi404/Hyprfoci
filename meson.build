@@ -1,5 +1,5 @@
 project('hyprfoci', 'cpp',
-  version: '0.1',
+  version: '0.2.0',
   default_options: ['buildtype=release'],
 )
 

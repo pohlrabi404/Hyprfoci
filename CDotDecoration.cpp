@@ -1,5 +1,6 @@
 #include "CDotDecoration.hpp"
 #include "globals.hpp"
+#include "src/render/pass/TexPassElement.hpp"
 
 #include <hyprland/src/desktop/Window.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
@@ -7,6 +8,7 @@
 #include <hyprland/src/render/decorations/IHyprWindowDecoration.hpp>
 #include <hyprland/src/render/pass/RectPassElement.hpp>
 #include <hyprlang.hpp>
+#include <hyprutils/memory/UniquePtr.hpp>
 #include <string>
 
 CDotDecoration::CDotDecoration(PHLWINDOW pWindow)
@@ -64,13 +66,24 @@ void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
   if (size_y < 1) {
     size_y = PWINDOW->m_size.y * size_y;
   }
-  CRectPassElement::SRectData rectData;
-  rectData.color = CHyprColor(**PCOLOR);
-  rectData.box = squareBox;
-  rectData.clipBox = squareBox;
-  rectData.round = std::min(size_x, size_y);
-  rectData.roundingPower = **PROUND;
-  g_pHyprRenderer->m_renderPass.add(makeUnique<CRectPassElement>(rectData));
+
+  // render data
+  if (PTEXTURE) {
+    CTexPassElement::SRenderData renderData;
+    renderData.box = squareBox;
+    renderData.clipBox = squareBox;
+    renderData.a = 1.F;
+    renderData.tex = PTEXTURE;
+    g_pHyprRenderer->m_renderPass.add(makeUnique<CTexPassElement>(renderData));
+  } else {
+    CRectPassElement::SRectData rectData;
+    rectData.color = CHyprColor(**PCOLOR);
+    rectData.box = squareBox;
+    rectData.clipBox = squareBox;
+    rectData.round = std::min(size_x, size_y);
+    rectData.roundingPower = **PROUND;
+    g_pHyprRenderer->m_renderPass.add(makeUnique<CRectPassElement>(rectData));
+  }
 }
 
 CBox CDotDecoration::getSquareBox() {
@@ -102,6 +115,11 @@ CBox CDotDecoration::getSquareBox() {
   if (pos_y < 1 && pos_y > -1) {
     pos_y = PWINDOW->m_realSize->value().y * pos_y;
   }
+
+  if (PTEXTURE && size_x == 0)
+    size_x = size_y * PTEXTURE->m_size.x / PTEXTURE->m_size.y;
+  if (size_x != 0 && size_y == 0 && PTEXTURE)
+    size_y = size_x * PTEXTURE->m_size.y / PTEXTURE->m_size.x;
 
   static auto *const PORIGIN =
       (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
