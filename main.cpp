@@ -57,7 +57,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 
   // config variables
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:size",
-                              Hyprlang::VEC2{20, 20});
+                              Hyprlang::VEC2{10, 10});
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:pos",
                               Hyprlang::VEC2{10, 10});
   HyprlandAPI::addConfigValue(
