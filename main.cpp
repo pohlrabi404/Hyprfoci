@@ -1,16 +1,6 @@
-#include <any>
-#include <hyprland/src/Compositor.hpp>
-#include <hyprland/src/SharedDefs.hpp>
-#include <hyprland/src/config/ConfigManager.hpp>
-#include <hyprland/src/desktop/Window.hpp>
-#include <hyprland/src/plugins/PluginAPI.hpp>
-#include <hyprland/src/render/OpenGL.hpp>
-#include <hyprlang.hpp>
-#include <hyprutils/math/Vector2D.hpp>
-#include <hyprutils/memory/UniquePtr.hpp>
-
 #include "CDotDecoration.hpp"
 #include "globals.hpp"
+#include "hyprland/src/helpers/MiscFunctions.hpp"
 
 static CDotDecoration *current = nullptr;
 
@@ -60,11 +50,17 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
                               Hyprlang::VEC2{10, 10});
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:pos",
                               Hyprlang::VEC2{10, 10});
+  HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:origin",
+                              Hyprlang::VEC2{0, 0});
   HyprlandAPI::addConfigValue(
       PHANDLE, "plugin:hyprfoci:color",
       Hyprlang::INT{*configStringToInt("rgba(11ff3388)")});
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:rounding",
                               Hyprlang::FLOAT{4.0});
+
+  // TODO: PNG support
+  HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:img",
+                              Hyprlang::STRING{"none"});
 
   static auto P = HyprlandAPI::registerCallbackDynamic(
       PHANDLE, "closeWindow",

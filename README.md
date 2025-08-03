@@ -38,6 +38,7 @@ plugin {
 		rounding = 2.0 # usually 2.0 will make it a circle
                        # high number can make it square-er
 		color = rgba(aaff0088)
+		origin = 2, 1 #0: left/top, 1: middle, 2: down/right
     }
 }
 ```
@@ -46,7 +47,7 @@ TODO
 - [x] main functionalities
 - [x] add config options
     - [x] size, color, position
-    - [ ] more position origins (top left, top middle, etc)
+    - [x] more position origins (top left, top middle, etc)
     - [ ] shape (maybe just svg instead)
     - [ ] option to disable indicator when there is only 1 window
     - [ ] change dot to svg

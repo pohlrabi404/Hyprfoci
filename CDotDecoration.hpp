@@ -1,11 +1,5 @@
 #pragma once
-#include <cstdint>
-#include <hyprland/src/desktop/DesktopTypes.hpp>
-#include <hyprland/src/helpers/Color.hpp>
-#include <hyprland/src/render/decorations/DecorationPositioner.hpp>
 #include <hyprland/src/render/decorations/IHyprWindowDecoration.hpp>
-#include <hyprutils/math/Box.hpp>
-#include <string>
 
 class CDotDecoration : public IHyprWindowDecoration {
 public:
