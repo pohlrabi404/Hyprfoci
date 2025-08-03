@@ -25,6 +25,20 @@ hyprctl plugin load /dir/to/hyprfoci.so
 ```
 change load to unload to remove the plugin
 
+## Config
+Add the following to your Hyprland.conf
+```hyprland.conf
+plugin {
+    hyprfoci {
+		size = 10, 10 # width, height 
+		pos = 10, 10 # distance from the top left corner
+		rounding = 2.0 # usually 2.0 will make it a circle
+                       # high number can make it square-er
+		color = rgba(aaff0088)
+    }
+}
+```
+
 TODO
 - [x] main functionalities
 - [ ] config
