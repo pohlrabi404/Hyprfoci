@@ -22,9 +22,5 @@ public:
   virtual CBox getSquareBox();
   virtual void onPositioningReply(const SDecorationPositioningReply &reply);
   PHLWINDOW getOwner();
-
   PHLWINDOWREF m_pWindow;
-
-private:
-  CHyprColor m_cSquareColor = CHyprColor(0.451f, 0.851f, 0.212f, 0.8f);
 };

@@ -28,11 +28,12 @@ change load to unload to remove the plugin
 TODO
 - [x] main functionalities
 - [ ] config
-    - [ ] size
-    - [ ] color
-    - [ ] position
+    - [x] size
+    - [x] color
+    - [x] position
     - [ ] shape
     - [ ] option to disable indicator when there is only 1 window
+    - [ ] change dot to svg
 - [ ] maybe something else
 
 ## Contribute

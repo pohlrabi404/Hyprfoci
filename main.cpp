@@ -1,15 +1,16 @@
 #include <any>
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/SharedDefs.hpp>
+#include <hyprland/src/config/ConfigManager.hpp>
 #include <hyprland/src/desktop/Window.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/render/OpenGL.hpp>
+#include <hyprlang.hpp>
 #include <hyprutils/math/Vector2D.hpp>
 #include <hyprutils/memory/UniquePtr.hpp>
 
 #include "CDotDecoration.hpp"
-
-inline HANDLE PHANDLE = nullptr;
+#include "globals.hpp"
 
 static CDotDecoration *current = nullptr;
 
@@ -53,6 +54,17 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         CHyprColor{1.0, 0.2, 0.2, 1.0}, 5000);
     throw std::runtime_error("[Hyprfoci] Version mismatch");
   }
+
+  // config variables
+  HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:size",
+                              Hyprlang::VEC2{20, 20});
+  HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:pos",
+                              Hyprlang::VEC2{10, 10});
+  HyprlandAPI::addConfigValue(
+      PHANDLE, "plugin:hyprfoci:color",
+      Hyprlang::INT{*configStringToInt("rgba(11ff3388)")});
+  HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:rounding",
+                              Hyprlang::FLOAT{4.0});
 
   static auto P = HyprlandAPI::registerCallbackDynamic(
       PHANDLE, "closeWindow",

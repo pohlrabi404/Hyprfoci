@@ -1,13 +1,17 @@
 #include "CDotDecoration.hpp"
+#include "globals.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <hyprland/src/desktop/DesktopTypes.hpp>
 #include <hyprland/src/desktop/Window.hpp>
 #include <hyprland/src/helpers/Monitor.hpp>
+#include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/render/Renderer.hpp>
 #include <hyprland/src/render/decorations/DecorationPositioner.hpp>
 #include <hyprland/src/render/decorations/IHyprWindowDecoration.hpp>
 #include <hyprland/src/render/pass/RectPassElement.hpp>
+#include <hyprlang.hpp>
 #include <hyprutils/math/Box.hpp>
 #include <hyprutils/memory/SharedPtr.hpp>
 #include <hyprutils/memory/UniquePtr.hpp>
@@ -46,13 +50,26 @@ void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
     return;
   }
 
+  static auto *const PSIZE =
+      (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
+          PHANDLE, "plugin:hyprfoci:size")
+          ->getDataStaticPtr();
+  static auto *const PCOLOR =
+      (Hyprlang::INT *const *)HyprlandAPI::getConfigValue(
+          PHANDLE, "plugin:hyprfoci:color")
+          ->getDataStaticPtr();
+  static auto *const PROUND =
+      (Hyprlang::FLOAT *const *)HyprlandAPI::getConfigValue(
+          PHANDLE, "plugin:hyprfoci:rounding")
+          ->getDataStaticPtr();
+
   // render square
   CRectPassElement::SRectData rectData;
-  rectData.color = m_cSquareColor;
+  rectData.color = CHyprColor(**PCOLOR);
   rectData.box = squareBox;
   rectData.clipBox = squareBox;
-  rectData.round = 10;
-  rectData.roundingPower = 2.0;
+  rectData.round = std::min((**PSIZE).x, (**PSIZE).y);
+  rectData.roundingPower = **PROUND;
 
   g_pHyprRenderer->m_renderPass.add(makeUnique<CRectPassElement>(rectData));
 }
@@ -60,11 +77,20 @@ void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
 CBox CDotDecoration::getSquareBox() {
   const auto PWINDOW = m_pWindow.lock();
 
-  // position at top
-  double squareX = PWINDOW->m_realPosition->value().x + 10;
-  double squareY = PWINDOW->m_realPosition->value().y + 10;
+  static auto *const PSIZE =
+      (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
+          PHANDLE, "plugin:hyprfoci:size")
+          ->getDataStaticPtr();
+  static auto *const PPOS =
+      (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
+          PHANDLE, "plugin:hyprfoci:pos")
+          ->getDataStaticPtr();
 
-  CBox box = {squareX, squareY, 20, 20};
+  // position at top
+  double squareX = PWINDOW->m_realPosition->value().x + (**PPOS).x;
+  double squareY = PWINDOW->m_realPosition->value().y + (**PPOS).y;
+
+  CBox box = {squareX, squareY, (**PSIZE).x * 2, (**PSIZE).y * 2};
 
   // handle workspace offset
   const auto PWORKSPACE = PWINDOW->m_workspace;
