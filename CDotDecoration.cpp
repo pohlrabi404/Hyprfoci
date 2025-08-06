@@ -1,12 +1,13 @@
 #include "CDotDecoration.hpp"
 #include "globals.hpp"
-#include "src/render/pass/TexPassElement.hpp"
 
+#include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/desktop/Window.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/render/Renderer.hpp>
 #include <hyprland/src/render/decorations/IHyprWindowDecoration.hpp>
 #include <hyprland/src/render/pass/RectPassElement.hpp>
+#include <hyprland/src/render/pass/TexPassElement.hpp>
 #include <hyprlang.hpp>
 #include <hyprutils/memory/UniquePtr.hpp>
 #include <string>
@@ -14,7 +15,66 @@
 CDotDecoration::CDotDecoration(PHLWINDOW pWindow)
     : IHyprWindowDecoration(pWindow) {
   m_pWindow = pWindow;
+  if (g_pTextures["both.png"]) {
+    m_pTexture = g_pTextures["both.png"];
+    m_pKeypressCallback = HyprlandAPI::registerCallbackDynamic(
+        PHANDLE, "keyPress",
+        [&](void *self, SCallbackInfo &info, std::any data) {
+          onKeypress(info, data);
+        });
+  } else if (g_pTexture) {
+    m_pTexture = g_pTexture;
+  }
+
   const auto PMONITOR = pWindow->m_monitor.lock();
+}
+
+void CDotDecoration::onKeypress(SCallbackInfo &info, std::any data) {
+  auto const keyEvent =
+      std::any_cast<std::unordered_map<std::string, std::any>>(data);
+  auto const event = std::any_cast<IKeyboard::SKeyEvent>(keyEvent.at("event"));
+  auto const hand = getHandForKeyEvent(event);
+
+  std::string textureName;
+  if (event.state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+    textureName = hand;
+  } else {
+    textureName = "both.png";
+  }
+
+  const auto PMONITOR = m_pWindow->m_monitor.lock();
+  damageEntire();
+  m_pTexture = g_pTextures[textureName];
+}
+
+std::string CDotDecoration::getHandForKeyEvent(IKeyboard::SKeyEvent event) {
+  uint32_t keycode = event.keycode;
+
+  // Left hand keys on a standard QWERTY keyboard
+  const std::vector<uint32_t> leftHandKeys = {// Left side of number row
+                                              KEY_1, KEY_2, KEY_3, KEY_4, KEY_5,
+
+                                              // Left side of top row
+                                              KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T,
+
+                                              // Left side of home row
+                                              KEY_A, KEY_S, KEY_D, KEY_F, KEY_G,
+
+                                              // Left side of bottom row
+                                              KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B,
+
+                                              // Left modifiers and special keys
+                                              KEY_ESC, KEY_TAB, KEY_CAPSLOCK,
+                                              KEY_LEFTSHIFT, KEY_LEFTCTRL,
+                                              KEY_LEFTALT, KEY_LEFTMETA};
+
+  // Check if keycode is for a left hand key
+  if (std::find(leftHandKeys.begin(), leftHandKeys.end(), keycode) !=
+      leftHandKeys.end()) {
+    return "left.png"; // Left hand
+  } else {
+    return "right.png"; // Everything else is right hand?
+  }
 }
 
 CDotDecoration::~CDotDecoration() { damageEntire(); }
@@ -68,12 +128,12 @@ void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
   }
 
   // render data
-  if (PTEXTURE) {
+  if (m_pTexture) {
     CTexPassElement::SRenderData renderData;
     renderData.box = squareBox;
     renderData.clipBox = squareBox;
     renderData.a = 1.F;
-    renderData.tex = PTEXTURE;
+    renderData.tex = m_pTexture;
     g_pHyprRenderer->m_renderPass.add(makeUnique<CTexPassElement>(renderData));
   } else {
     CRectPassElement::SRectData rectData;
@@ -116,10 +176,10 @@ CBox CDotDecoration::getSquareBox() {
     pos_y = PWINDOW->m_realSize->value().y * pos_y;
   }
 
-  if (PTEXTURE && size_x == 0)
-    size_x = size_y * PTEXTURE->m_size.x / PTEXTURE->m_size.y;
-  if (size_x != 0 && size_y == 0 && PTEXTURE)
-    size_y = size_x * PTEXTURE->m_size.y / PTEXTURE->m_size.x;
+  if (m_pTexture && size_x == 0)
+    size_x = size_y * m_pTexture->m_size.x / m_pTexture->m_size.y;
+  if (size_x != 0 && size_y == 0 && m_pTexture)
+    size_y = size_x * m_pTexture->m_size.y / m_pTexture->m_size.x;
 
   static auto *const PORIGIN =
       (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
@@ -155,7 +215,6 @@ void CDotDecoration::updateWindow(PHLWINDOW pWindow) { damageEntire(); }
 
 void CDotDecoration::damageEntire() {
   auto box = getSquareBox();
-  box.translate(m_pWindow->m_floatingOffset);
   g_pHyprRenderer->damageBox(box);
 }
 
