@@ -158,14 +158,14 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 
   const std::string HASH = __hyprland_api_get_hash();
 
-  // if (HASH != GIT_COMMIT_HASH) {
-  //   HyprlandAPI::addNotification(
-  //       PHANDLE,
-  //       "[Hyprfoci] Failure in initialization: Version mismatch (headers ver
-  //       " "is not equal to running hyprland ver)", CHyprColor{1.0, 0.2,
-  //       0.2, 1.0}, 5000);
-  //   throw std::runtime_error("[Hyprfoci] Version mismatch");
-  // }
+  if (HASH != GIT_COMMIT_HASH) {
+    HyprlandAPI::addNotification(
+        PHANDLE,
+        "[Hyprfoci] Failure in initialization: Version mismatch (headers ver "
+        "is not equal to running hyprland ver)",
+        CHyprColor{1.0, 0.2, 0.2, 1.0}, 5000);
+    throw std::runtime_error("[Hyprfoci] Version mismatch");
+  }
 
   // config variables
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:size",
@@ -180,7 +180,6 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:rounding",
                               Hyprlang::FLOAT{4.0});
 
-  // TODO: PNG support
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:img",
                               Hyprlang::STRING{"none"});
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:imgs",
@@ -203,10 +202,19 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         onConfigReload(self, data);
       });
 
+  // generate a deco for current window if exists
+  for (auto &w : g_pCompositor->m_windows) {
+    if (g_pCompositor->isWindowActive(w)) {
+      auto deco = makeUnique<CDotDecoration>(w);
+      current = deco.get();
+      HyprlandAPI::addWindowDecoration(PHANDLE, w, std::move(deco));
+    }
+  }
+
   HyprlandAPI::addNotification(PHANDLE, "[Hyprfoci] init successful",
                                CHyprColor{0.2, 1.0, 0.2, 1.0}, 5000);
   return {"hyprfoci", "A plugin to add a dot focus indicator", "Pohlrabi",
-          "0.2.0"};
+          "0.2.1"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {}
