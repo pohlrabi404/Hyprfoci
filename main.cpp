@@ -1,67 +1,95 @@
 #include "CDotDecoration.hpp"
 #include "cairo.h"
 #include "globals.hpp"
-#include "src/Compositor.hpp"
 
 #include <GLES2/gl2ext.h>
 #include <filesystem>
+#include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/helpers/MiscFunctions.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprlang.hpp>
 #include <hyprutils/math/Vector2D.hpp>
+#include <hyprutils/memory/SharedPtr.hpp>
 #include <hyprutils/memory/UniquePtr.hpp>
 #include <string>
 
 static CDotDecoration *current = nullptr;
 
-void loadTexture() {
-  static auto *const PIMGPATH =
-      (Hyprlang::STRING const *)HyprlandAPI::getConfigValue(
-          PHANDLE, "plugin:hyprfoci:img")
-          ->getDataStaticPtr();
-  if (std::string{*PIMGPATH} == "none")
-    return;
-  PTEXTURE = makeShared<CTexture>();
-  PTEXTURE->allocate();
+void loadTexture(fs::path parentPath, bool animated) {
+  if (!animated) {
+    g_pTexture = nullptr;
+    g_pTexture = makeShared<CTexture>();
+    g_pTexture->allocate();
+    fs::path path = parentPath;
 
-  std::string path = std::string{*PIMGPATH};
+    if (!fs::exists(path))
+      noti("[hyprfoci] {} not found", path.generic_string());
+    const auto CAIROSURFACE = cairo_image_surface_create_from_png(path.c_str());
+    const auto CAIRO = cairo_create(CAIROSURFACE);
 
-  if (!std::filesystem::exists(path)) {
-    HyprlandAPI::addNotification(
-        PHANDLE, std::format("[Hyprfoci] no image exist at {}", path.c_str()),
-        CHyprColor{0.0, 0.0, 1.0, 1.0}, 5000);
-  }
+    const Vector2D textureSize = {
+        static_cast<double>(cairo_image_surface_get_width(CAIROSURFACE)),
+        static_cast<double>(cairo_image_surface_get_height(CAIROSURFACE))};
 
-  const auto CAIROSURFACE = cairo_image_surface_create_from_png(path.c_str());
-  const auto CAIRO = cairo_create(CAIROSURFACE);
+    g_pTexture->m_size = textureSize;
 
-  const Vector2D textureSize = {
-      static_cast<double>(cairo_image_surface_get_width(CAIROSURFACE)),
-      static_cast<double>(cairo_image_surface_get_height(CAIROSURFACE))};
-
-  PTEXTURE->m_size = textureSize;
-
-  const auto DATA = cairo_image_surface_get_data(CAIROSURFACE);
-  glBindTexture(GL_TEXTURE_2D, PTEXTURE->m_texID);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    const auto DATA = cairo_image_surface_get_data(CAIROSURFACE);
+    glBindTexture(GL_TEXTURE_2D, g_pTexture->m_texID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #ifndef GLES2
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
 #endif
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, DATA);
-  cairo_surface_destroy(CAIROSURFACE);
-  cairo_destroy(CAIRO);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, DATA);
+    cairo_surface_destroy(CAIROSURFACE);
+    cairo_destroy(CAIRO);
+  } else {
+    for (auto &pair : g_pTextures) {
+      pair.second = nullptr;
+
+      pair.second = makeShared<CTexture>();
+      pair.second->allocate();
+      fs::path path = parentPath / pair.first;
+
+      if (!fs::exists(path))
+        noti("[hyprfoci] {} not found", pair.first, path.generic_string());
+      const auto CAIROSURFACE =
+          cairo_image_surface_create_from_png(path.c_str());
+      const auto CAIRO = cairo_create(CAIROSURFACE);
+
+      const Vector2D textureSize = {
+          static_cast<double>(cairo_image_surface_get_width(CAIROSURFACE)),
+          static_cast<double>(cairo_image_surface_get_height(CAIROSURFACE))};
+
+      pair.second->m_size = textureSize;
+
+      const auto DATA = cairo_image_surface_get_data(CAIROSURFACE);
+      glBindTexture(GL_TEXTURE_2D, pair.second->m_texID);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#ifndef GLES2
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+#endif
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize.x, textureSize.y, 0,
+                   GL_RGBA, GL_UNSIGNED_BYTE, DATA);
+      cairo_surface_destroy(CAIROSURFACE);
+      cairo_destroy(CAIRO);
+    }
+  }
 }
 
 void onCloseWindow(void *self, std::any data) {
   const auto PWINDOW = std::any_cast<PHLWINDOW>(data);
   auto square = current;
 
-  if (current && current->m_pWindow.lock() == PWINDOW) {
+  if (current && current->getOwner() == PWINDOW) {
     HyprlandAPI::removeWindowDecoration(PHANDLE, square);
     current = nullptr;
   }
@@ -89,12 +117,33 @@ void onConfigReload(void *self, std::any data) {
     HyprlandAPI::removeWindowDecoration(PHANDLE, current);
   }
 
-  if (PTEXTURE) {
-    PTEXTURE = nullptr;
-  }
-
   if (PWINDOW) {
-    loadTexture();
+    static const auto m_pImgPaths =
+        (const Hyprlang::STRING *)HyprlandAPI::getConfigValue(
+            PHANDLE, "plugin:hyprfoci:imgs")
+            ->getDataStaticPtr();
+    static const auto m_pImgPath =
+        (const Hyprlang::STRING *)HyprlandAPI::getConfigValue(
+            PHANDLE, "plugin:hyprfoci:img")
+            ->getDataStaticPtr();
+
+    // make sure only load img or imgs
+    if (std::string{*m_pImgPaths} != "none") {
+      g_pTexture = nullptr;
+      const auto path = expandTilde(std::string{*m_pImgPaths});
+      loadTexture(path, true);
+    } else if (std::string{*m_pImgPath} != "none") {
+      for (auto &t : g_pTextures) {
+        t.second = nullptr;
+      }
+      const auto path = expandTilde(std::string{*m_pImgPath});
+      loadTexture(path, false);
+    } else {
+      for (auto &t : g_pTextures) {
+        t.second = nullptr;
+      }
+      g_pTexture = nullptr;
+    }
     auto square = makeUnique<CDotDecoration>(PWINDOW);
     current = square.get();
 
@@ -131,8 +180,9 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:rounding",
                               Hyprlang::FLOAT{4.0});
 
-  // TODO: PNG support
   HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:img",
+                              Hyprlang::STRING{"none"});
+  HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfoci:imgs",
                               Hyprlang::STRING{"none"});
 
   static auto P = HyprlandAPI::registerCallbackDynamic(
@@ -152,10 +202,19 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         onConfigReload(self, data);
       });
 
+  // generate a deco for current window if exists
+  for (auto &w : g_pCompositor->m_windows) {
+    if (g_pCompositor->isWindowActive(w)) {
+      auto deco = makeUnique<CDotDecoration>(w);
+      current = deco.get();
+      HyprlandAPI::addWindowDecoration(PHANDLE, w, std::move(deco));
+    }
+  }
+
   HyprlandAPI::addNotification(PHANDLE, "[Hyprfoci] init successful",
                                CHyprColor{0.2, 1.0, 0.2, 1.0}, 5000);
   return {"hyprfoci", "A plugin to add a dot focus indicator", "Pohlrabi",
-          "0.2.0"};
+          "0.2.1"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {}
