@@ -14,6 +14,7 @@
 #include <string>
 
 static CDotDecoration *current = nullptr;
+static bool isTextureLoaded = false;
 
 void loadTexture(fs::path parentPath, bool animated) {
   if (!animated) {
@@ -85,6 +86,35 @@ void loadTexture(fs::path parentPath, bool animated) {
   }
 }
 
+void initialLoad() {
+  static const auto m_pImgPaths =
+      (const Hyprlang::STRING *)HyprlandAPI::getConfigValue(
+          PHANDLE, "plugin:hyprfoci:imgs")
+          ->getDataStaticPtr();
+  static const auto m_pImgPath =
+      (const Hyprlang::STRING *)HyprlandAPI::getConfigValue(
+          PHANDLE, "plugin:hyprfoci:img")
+          ->getDataStaticPtr();
+
+  // make sure only load img or imgs
+  if (std::string{*m_pImgPaths} != "none") {
+    g_pTexture = nullptr;
+    const auto path = expandTilde(std::string{*m_pImgPaths});
+    loadTexture(path, true);
+  } else if (std::string{*m_pImgPath} != "none") {
+    for (auto &t : g_pTextures) {
+      t.second = nullptr;
+    }
+    const auto path = expandTilde(std::string{*m_pImgPath});
+    loadTexture(path, false);
+  } else {
+    for (auto &t : g_pTextures) {
+      t.second = nullptr;
+    }
+    g_pTexture = nullptr;
+  }
+}
+
 void onCloseWindow(void *self, std::any data) {
   const auto PWINDOW = std::any_cast<PHLWINDOW>(data);
   auto square = current;
@@ -97,6 +127,9 @@ void onCloseWindow(void *self, std::any data) {
 
 void onActiveWindow(void *self, std::any data) {
   const auto PWINDOW = std::any_cast<PHLWINDOW>(data);
+
+  if (!isTextureLoaded)
+    initialLoad();
 
   if (current) {
     HyprlandAPI::removeWindowDecoration(PHANDLE, current);
@@ -118,35 +151,9 @@ void onConfigReload(void *self, std::any data) {
   }
 
   if (PWINDOW) {
-    static const auto m_pImgPaths =
-        (const Hyprlang::STRING *)HyprlandAPI::getConfigValue(
-            PHANDLE, "plugin:hyprfoci:imgs")
-            ->getDataStaticPtr();
-    static const auto m_pImgPath =
-        (const Hyprlang::STRING *)HyprlandAPI::getConfigValue(
-            PHANDLE, "plugin:hyprfoci:img")
-            ->getDataStaticPtr();
-
-    // make sure only load img or imgs
-    if (std::string{*m_pImgPaths} != "none") {
-      g_pTexture = nullptr;
-      const auto path = expandTilde(std::string{*m_pImgPaths});
-      loadTexture(path, true);
-    } else if (std::string{*m_pImgPath} != "none") {
-      for (auto &t : g_pTextures) {
-        t.second = nullptr;
-      }
-      const auto path = expandTilde(std::string{*m_pImgPath});
-      loadTexture(path, false);
-    } else {
-      for (auto &t : g_pTextures) {
-        t.second = nullptr;
-      }
-      g_pTexture = nullptr;
-    }
+    initialLoad();
     auto square = makeUnique<CDotDecoration>(PWINDOW);
     current = square.get();
-
     HyprlandAPI::addWindowDecoration(PHANDLE, PWINDOW, std::move(square));
   }
 }
@@ -217,4 +224,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
           "0.2.1"};
 }
 
-APICALL EXPORT void PLUGIN_EXIT() {}
+APICALL EXPORT void PLUGIN_EXIT() {
+  HyprlandAPI::addNotification(PHANDLE, "[Hyprfoci] unload successful",
+                               CHyprColor{0.2, 1.0, 0.2, 1.0}, 5000);
+}

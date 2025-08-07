@@ -77,11 +77,7 @@ std::string CDotDecoration::getHandForKeyEvent(IKeyboard::SKeyEvent event) {
   }
 }
 
-CDotDecoration::~CDotDecoration() {
-  m_pTexture.reset();
-  m_pKeypressCallback.reset();
-  damageEntire();
-}
+CDotDecoration::~CDotDecoration() { g_pHyprRenderer->m_renderPass.clear(); }
 
 SDecorationPositioningInfo CDotDecoration::getPositioningInfo() {
   SDecorationPositioningInfo info;
