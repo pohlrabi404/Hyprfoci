@@ -37,6 +37,10 @@ change load to unload to remove the plugin
 ## Config
 
 ### Typing Bongocat! [**NEW**]
+
+Now you can have cute bongocat! Copy the bongo dir that has images in there
+to your prefered location and set plugin:hyprfoci:imgs accordingly
+
 ```hyprland.conf
 plugin {
 	hyprfoci {
@@ -61,7 +65,9 @@ plugin {
 ```
 
 ### Simple dot or png
+
 Add the following to your Hyprland.conf for normal configuration with dot or png
+
 ```hyprland.conf
 plugin {
 	hyprfoci {
