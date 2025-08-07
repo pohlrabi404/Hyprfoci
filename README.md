@@ -14,8 +14,7 @@ So the overall use cases:
 **Bongocat tho, that thing invalidated everything I said above.**
 
 ## Demo
-[📽️ Demo video (v0.2.0)](https://github.com/user-attachments/assets/677dee35-c2f8-4fef-8014-55c800b47688)
-
+[📽️ Demo video (v0.2.1)](https://github.com/user-attachments/assets/1fdaddc6-038f-4a72-b526-8591fa29e1c0)
 
 ## Installation
 ### Requirement
