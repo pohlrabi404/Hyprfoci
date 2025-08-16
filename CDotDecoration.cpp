@@ -3,6 +3,7 @@
 
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/desktop/Window.hpp>
+#include <hyprland/src/desktop/WindowRule.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/render/Renderer.hpp>
 #include <hyprland/src/render/decorations/IHyprWindowDecoration.hpp>
@@ -15,6 +16,15 @@
 CDotDecoration::CDotDecoration(PHLWINDOW pWindow)
     : IHyprWindowDecoration(pWindow) {
   m_pWindow = pWindow;
+  m_pEnabled = true;
+
+  for (const auto &r : m_pWindow->m_matchedRules) {
+    if (r->m_ruleType == CWindowRule::RULE_PLUGIN &&
+        r->m_rule == "plugin:hyprfoci:enabled 0") {
+      m_pEnabled = false;
+    }
+  }
+
   if (g_pTextures["both.png"]) {
     m_pTexture = g_pTextures["both.png"];
     m_pKeypressCallback = HyprlandAPI::registerCallbackDynamic(
@@ -88,13 +98,14 @@ SDecorationPositioningInfo CDotDecoration::getPositioningInfo() {
 }
 
 void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
-  if (!validMapped(m_pWindow)) {
+  if (!m_pEnabled)
     return;
-  }
+  if (!validMapped(m_pWindow))
+    return;
+
   const auto PWINDOW = m_pWindow.lock();
-  if (!PWINDOW->m_windowData.decorate.valueOrDefault()) {
+  if (!PWINDOW->m_windowData.decorate.valueOrDefault())
     return;
-  }
 
   CBox squareBox = getSquareBox();
   squareBox.translate(pMonitor->m_position * -1)
