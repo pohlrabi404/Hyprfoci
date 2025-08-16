@@ -64,6 +64,8 @@ plugin {
 		imgs = /path/to/your/imgs
 	}
 }
+# can also disable/enable with windowrule!
+windowrule = plugin:hyprfoci:enabled 0, class:kitty
 ```
 
 ### Simple dot or png
@@ -99,6 +101,8 @@ plugin {
 		img = /path/to/your/image.png
 	}
 }
+# can also disable/enable with windowrule!
+windowrule = plugin:hyprfoci:enabled 0, class:kitty
 ```
 
 
