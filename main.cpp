@@ -16,6 +16,7 @@
 static CDotDecoration *current = nullptr;
 static bool isTextureLoaded = false;
 
+// TODO this is messy as hell lol
 void loadTexture(fs::path parentPath, bool animated) {
   if (!animated) {
     g_pTexture = nullptr;

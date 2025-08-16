@@ -25,4 +25,5 @@ private:
   SP<HOOK_CALLBACK_FN> m_pKeypressCallback;
   PHLWINDOWREF m_pWindow;
   SP<CTexture> m_pTexture;
+  bool m_pEnabled;
 };
