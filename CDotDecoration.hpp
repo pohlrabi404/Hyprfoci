@@ -2,6 +2,8 @@
 #include <hyprland/src/devices/Keyboard.hpp>
 #include <hyprland/src/render/Texture.hpp>
 #include <hyprland/src/render/decorations/IHyprWindowDecoration.hpp>
+#include <hyprland/src/event/EventBus.hpp>
+#include <hyprland/src/plugins/PluginAPI.hpp>
 
 class CDotDecoration : public IHyprWindowDecoration {
 public:
@@ -18,12 +20,11 @@ public:
   virtual CBox getSquareBox();
   virtual void onPositioningReply(const SDecorationPositioningReply &reply);
   PHLWINDOW getOwner();
-  virtual void onKeypress(SCallbackInfo &info, std::any data);
+  virtual void onKeypress(Event::SCallbackInfo& info, const IKeyboard::SKeyEvent& event);
   virtual std::string getHandForKeyEvent(IKeyboard::SKeyEvent event);
 
 private:
-  SP<HOOK_CALLBACK_FN> m_pKeypressCallback;
+  CHyprSignalListener m_pKeypressCallback;
   PHLWINDOWREF m_pWindow;
-  SP<CTexture> m_pTexture;
-  bool m_pEnabled;
+  SP<Render::ITexture> m_pTexture;
 };

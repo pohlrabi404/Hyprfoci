@@ -1,3 +1,6 @@
+# Archived repository
+moved to [hypr-bongocat](https://github.com/RoundUpSSBM/hypr-bongocat)
+
 # Hyprfoci (Hyprland Focus Indicator)
 
 A tiny Hyprland plugin that draws a single, always-visible dot in the corner of the screen whenever any window has input focus.
@@ -26,7 +29,7 @@ So the overall use cases:
 
 ### Build from source
 ```bash
-git clone https://github.com/pohlrabi404/Hyprfoci
+git clone https://github.com/roundupssbm/hyprfoci
 cd Hyprfoci
 make all
 ```
@@ -43,66 +46,74 @@ change load to unload to remove the plugin
 Now you can have cute bongocat! Copy the bongo dir that has images in there
 to your prefered location and set plugin:hyprfoci:imgs accordingly
 
-```hyprland.conf
-plugin {
-	hyprfoci {
-		# can be from -1 to 1, will be
-			# dynamic ratio with the window instead.
-			# recommend fixed size for image as dynamic can look weird
-			# leave one as 0 to keep original image ratio (image only)
-		# width, height
-		size = 100, 0 			
+```hyprland.lua
+hl.config({
+    plugin = {
+        hyprfoci = {
+            -- can be from -1 to 1, will be
+                -- dynamic ratio with the window instead.
+                -- recommend fixed size for image as dynamic can look weird
+                -- leave one as 0 to keep original image ratio (image only)
+            -- width, height
+            size = { 100, 0 },			
 
-		# shift down right (can be from -1 to 1, similarly)
-		pos = 0, 0
+            -- shift down right (can be from -1 to 1, similarly)
+            pos = { 0, 0 },
 
-		#0: left/top, 1: middle, 2: down/right
-		origin = 1, 0 
+            --0: left/top, 1: middle, 2: down/right
+            origin = { 1, 0 },
 
-        # path to a directory with both.png, left.png, right.png
-		# Absolute path is needed (~ for home directory is fine)
-		imgs = /path/to/your/imgs
-	}
-}
+            -- path to a directory with both.png, left.png, right.png
+            -- Absolute path is needed (~ for home directory is fine)
+            imgs = "/path/to/your/imgs",
+
+            -- can also exclude specific windows!
+            exclude = "kitty, firefox",        
+        }
+    }
+})
 # can also disable/enable with windowrule!
 windowrule = plugin:hyprfoci:enabled 0, class:kitty
 ```
 
 ### Simple dot or png
 
-Add the following to your Hyprland.conf for normal configuration with dot or png
+Add the following to your Hyprland.lua for normal configuration with dot or png
 
-```hyprland.conf
-plugin {
-	hyprfoci {
-		# can be from -1 to 1, will be
-			# dynamic ratio with the window instead.
-			# recommend fixed size for image as dynamic can look weird
-			# in some cases.
-			# leave one as 0 to keep original image ratio (image only)
-		# width, height
-		size = 100, 0 			
+```hyprland.lua
+hl.plugin({
+    plugin = {
+        hyprfoci {
+            -- can be from -1 to 1, will be
+                -- dynamic ratio with the window instead.
+                -- recommend fixed size for image as dynamic can look weird
+                -- in some cases.
+                -- leave one as 0 to keep original image ratio (image only)
+            -- width, height
+            size = { 100, 0 },			
 
-		# shift down right (can be from -1 to 1 similarly)
-		pos = 0, 0
+            -- shift down right (can be from -1 to 1 similarly)
+            pos = { 0, 0 },
 
-		# rounding of 3~4 usually results in circle
-			# depends on monitor type
-			# higher and lower will make it look square-ly
-			# doesn't affect image
-		rounding = 4.0
+            -- rounding of 3~4 usually results in circle
+                -- depends on monitor type
+                -- higher and lower will make it look square-ly
+                -- doesn't affect image
+            rounding = 4.0
 
-		# color = rgba(FFDD33FF)
+            -- color = rgba(FFDD33FF)
 
-		#0: left/top, 1: middle, 2: down/right
-		origin = 1, 0 
+            --0: left/top, 1: middle, 2: down/right
+            origin = { 1, 0 }, 
 
-		# Absolute path is needed (~ for home directory is fine)
-		img = /path/to/your/image.png
+            -- Absolute path is needed (~ for home directory is fine)
+            img = "/path/to/your/image.png", 
+            
+            -- can also exclude specific windows!
+            exclude = "kitty, firefox",        
+        }
 	}
-}
-# can also disable/enable with windowrule!
-windowrule = plugin:hyprfoci:enabled 0, class:kitty
+})
 ```
 
 

@@ -2,8 +2,8 @@
 #include "globals.hpp"
 
 #include <hyprland/src/Compositor.hpp>
-#include <hyprland/src/desktop/Window.hpp>
-#include <hyprland/src/desktop/WindowRule.hpp>
+#include <hyprland/src/desktop/view/Window.hpp>
+#include <hyprland/src/desktop/rule/windowRule/WindowRule.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/render/Renderer.hpp>
 #include <hyprland/src/render/decorations/IHyprWindowDecoration.hpp>
@@ -12,25 +12,17 @@
 #include <hyprlang.hpp>
 #include <hyprutils/memory/UniquePtr.hpp>
 #include <string>
+#include <hyprland/src/event/EventBus.hpp>
 
 CDotDecoration::CDotDecoration(PHLWINDOW pWindow)
     : IHyprWindowDecoration(pWindow) {
   m_pWindow = pWindow;
-  m_pEnabled = true;
-
-  for (const auto &r : m_pWindow->m_matchedRules) {
-    if (r->m_ruleType == CWindowRule::RULE_PLUGIN &&
-        r->m_rule == "plugin:hyprfoci:enabled 0") {
-      m_pEnabled = false;
-    }
-  }
 
   if (g_pTextures["both.png"]) {
     m_pTexture = g_pTextures["both.png"];
-    m_pKeypressCallback = HyprlandAPI::registerCallbackDynamic(
-        PHANDLE, "keyPress",
-        [&](void *self, SCallbackInfo &info, std::any data) {
-          onKeypress(info, data);
+    m_pKeypressCallback = Event::bus()->m_events.input.keyboard.key.listen(
+        [this](const IKeyboard::SKeyEvent& e, Event::SCallbackInfo& info) {
+            onKeypress(info, e);
         });
   } else if (g_pTexture) {
     m_pTexture = g_pTexture;
@@ -39,10 +31,7 @@ CDotDecoration::CDotDecoration(PHLWINDOW pWindow)
   const auto PMONITOR = pWindow->m_monitor.lock();
 }
 
-void CDotDecoration::onKeypress(SCallbackInfo &info, std::any data) {
-  auto const keyEvent =
-      std::any_cast<std::unordered_map<std::string, std::any>>(data);
-  auto const event = std::any_cast<IKeyboard::SKeyEvent>(keyEvent.at("event"));
+void CDotDecoration::onKeypress(Event::SCallbackInfo& info, const IKeyboard::SKeyEvent& event) {
   auto const hand = getHandForKeyEvent(event);
 
   std::string textureName;
@@ -87,7 +76,7 @@ std::string CDotDecoration::getHandForKeyEvent(IKeyboard::SKeyEvent event) {
   }
 }
 
-CDotDecoration::~CDotDecoration() { g_pHyprRenderer->m_renderPass.clear(); }
+CDotDecoration::~CDotDecoration() { damageEntire(); }
 
 SDecorationPositioningInfo CDotDecoration::getPositioningInfo() {
   SDecorationPositioningInfo info;
@@ -98,13 +87,11 @@ SDecorationPositioningInfo CDotDecoration::getPositioningInfo() {
 }
 
 void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
-  if (!m_pEnabled)
-    return;
   if (!validMapped(m_pWindow))
     return;
 
   const auto PWINDOW = m_pWindow.lock();
-  if (!PWINDOW->m_windowData.decorate.valueOrDefault())
+  if (!PWINDOW->m_ruleApplicator->decorate().valueOrDefault())
     return;
 
   CBox squareBox = getSquareBox();
@@ -115,25 +102,16 @@ void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
     return;
   }
 
-  static auto *const PSIZE =
-      (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
-          PHANDLE, "plugin:hyprfoci:size")
-          ->getDataStaticPtr();
-  static auto *const PCOLOR =
-      (Hyprlang::INT *const *)HyprlandAPI::getConfigValue(
-          PHANDLE, "plugin:hyprfoci:color")
-          ->getDataStaticPtr();
-  static auto *const PROUND =
-      (Hyprlang::FLOAT *const *)HyprlandAPI::getConfigValue(
-          PHANDLE, "plugin:hyprfoci:rounding")
-          ->getDataStaticPtr();
+  auto size = vars.size->value();
+  auto color = vars.color->value();
+  auto rounding = vars.rounding->value();
 
   // handle float size case
-  float size_x = (**PSIZE).x;
+  float size_x = (size).x;
   if (size_x < 1) {
     size_x = PWINDOW->m_size.x * size_x;
   }
-  float size_y = (**PSIZE).y;
+  float size_y = (size).y;
   if (size_y < 1) {
     size_y = PWINDOW->m_size.y * size_y;
   }
@@ -148,11 +126,11 @@ void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
     g_pHyprRenderer->m_renderPass.add(makeUnique<CTexPassElement>(renderData));
   } else {
     CRectPassElement::SRectData rectData;
-    rectData.color = CHyprColor(**PCOLOR);
+    rectData.color = CHyprColor(color);
     rectData.box = squareBox;
     rectData.clipBox = squareBox;
     rectData.round = std::min(size_x, size_y);
-    rectData.roundingPower = **PROUND;
+    rectData.roundingPower = rounding;
     g_pHyprRenderer->m_renderPass.add(makeUnique<CRectPassElement>(rectData));
   }
 }
@@ -160,29 +138,23 @@ void CDotDecoration::draw(PHLMONITOR pMonitor, float const &a) {
 CBox CDotDecoration::getSquareBox() {
   const auto PWINDOW = m_pWindow.lock();
 
-  static auto *const PSIZE =
-      (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
-          PHANDLE, "plugin:hyprfoci:size")
-          ->getDataStaticPtr();
-  static auto *const PPOS =
-      (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
-          PHANDLE, "plugin:hyprfoci:pos")
-          ->getDataStaticPtr();
+  auto size = vars.size->value();
+  auto position = vars.pos->value();
 
   // handle float size case
-  float size_x = (**PSIZE).x;
-  if ((**PSIZE).x < 1) {
-    size_x = PWINDOW->m_realSize->value().x * (**PSIZE).x;
+  float size_x = (size).x;
+  if ((size).x < 1) {
+    size_x = PWINDOW->m_realSize->value().x * (size).x;
   }
-  float size_y = (**PSIZE).y;
-  if ((**PSIZE).y < 1) {
-    size_y = PWINDOW->m_realSize->value().y * (**PSIZE).y;
+  float size_y = (size).y;
+  if ((size).y < 1) {
+    size_y = PWINDOW->m_realSize->value().y * (size).y;
   }
-  float pos_x = (**PPOS).x;
+  float pos_x = (position).x;
   if (pos_x < 1 && pos_x > -1) {
     pos_x = PWINDOW->m_realSize->value().x * pos_x;
   }
-  float pos_y = (**PPOS).y;
+  float pos_y = (position).y;
   if (pos_y < 1 && pos_y > -1) {
     pos_y = PWINDOW->m_realSize->value().y * pos_y;
   }
@@ -192,17 +164,14 @@ CBox CDotDecoration::getSquareBox() {
   if (size_x != 0 && size_y == 0 && m_pTexture)
     size_y = size_x * m_pTexture->m_size.y / m_pTexture->m_size.x;
 
-  static auto *const PORIGIN =
-      (Hyprlang::VEC2 *const *)HyprlandAPI::getConfigValue(
-          PHANDLE, "plugin:hyprfoci:origin")
-          ->getDataStaticPtr();
+  auto origin = vars.origin->value();
 
   double originX =
       PWINDOW->m_realPosition->value().x +
-      (**PORIGIN).x * (PWINDOW->m_realSize->value().x - size_x) / 2;
+      (origin).x * (PWINDOW->m_realSize->value().x - size_x) / 2;
   double originY =
       PWINDOW->m_realPosition->value().y +
-      ((**PORIGIN).y * (PWINDOW->m_realSize->value().y - size_y) / 2);
+      ((origin).y * (PWINDOW->m_realSize->value().y - size_y) / 2);
 
   // position at top
   double squareX = originX + pos_x;
@@ -226,6 +195,10 @@ void CDotDecoration::updateWindow(PHLWINDOW pWindow) { damageEntire(); }
 
 void CDotDecoration::damageEntire() {
   auto box = getSquareBox();
+  box.expand(100); // FIXME: i'm so sorry
+                   // when moving windows down, sometimes the top part doesn't
+                   // get damaged properly. there is no listener for moving windows
+                   // and i'm not busywaiting this shit
   g_pHyprRenderer->damageBox(box);
 }
 

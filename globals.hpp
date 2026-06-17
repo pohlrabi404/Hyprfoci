@@ -3,8 +3,26 @@
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/render/Texture.hpp>
 #include <wordexp.h>
+#include <hyprutils/memory/SharedPtr.hpp>
+#include <hyprland/src/config/values/ConfigValues.hpp>
 
 inline HANDLE PHANDLE = nullptr;
+
+template <typename T>
+using SP = Hyprutils::Memory::CSharedPointer<T>;
+
+struct SVars {
+    SP<Config::Values::CVec2Value>   size;
+    SP<Config::Values::CVec2Value>   pos;
+    SP<Config::Values::CVec2Value>   origin;
+    SP<Config::Values::CColorValue>  color;
+    SP<Config::Values::CFloatValue>  rounding;
+    SP<Config::Values::CStringValue> exclude;
+    SP<Config::Values::CStringValue> img;
+    SP<Config::Values::CStringValue> imgs;
+};
+
+inline SVars vars = {};
 
 // debug
 template <typename... Args>
@@ -29,10 +47,10 @@ inline fs::path expandTilde(std::string_view raw) {
 }
 
 // pngs pointers
-inline std::unordered_map<std::string, SP<CTexture>> g_pTextures = {
+inline std::unordered_map<std::string, SP<Render::ITexture>> g_pTextures = {
     {"both.png", nullptr},
     {"left.png", nullptr},
     {"right.png", nullptr},
 };
 
-inline SP<CTexture> g_pTexture = nullptr;
+inline SP<Render::ITexture> g_pTexture = nullptr;
